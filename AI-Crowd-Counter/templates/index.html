@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Crowd Counter</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="{{ url_for('static', filename='css/style.css') }}" rel="stylesheet">
+</head>
+<body>
+    <nav class="navbar-glass">
+        <div class="d-flex align-items-center">
+            <div class="logo-icon me-3">
+                <i class="fas fa-brain"></i>
+            </div>
+            <div>
+                <h1 class="navbar-title"><span class="brand-dot" id="brandDot"></span> AI Crowd Counter</h1>
+                <p class="navbar-subtitle">Smart People Tracking System</p>
+            </div>
+        </div>
+        <div class="d-flex align-items-center gap-3">
+            <div class="header-card" id="crowdCard">
+                <div class="header-card-icon" id="crowdIcon"><i class="fas fa-signal"></i></div>
+                <div>
+                    <div class="header-card-value" id="crowdLevel">--</div>
+                    <div class="header-card-label">Crowd Level</div>
+                </div>
+            </div>
+            <div class="header-card">
+                <div class="header-card-icon"><i class="fas fa-users"></i></div>
+                <div>
+                    <div class="header-card-value" id="totalPeople">0</div>
+                    <div class="header-card-label">Total People</div>
+                </div>
+            </div>
+            <div class="header-card">
+                <div class="header-card-icon"><i class="fas fa-calendar"></i></div>
+                <div>
+                    <div class="header-card-value" id="currentDate">--</div>
+                    <div class="header-card-label">Date & Time</div>
+                </div>
+            </div>
+            <div class="header-card">
+                <div class="header-card-icon status-active"><i class="fas fa-circle"></i></div>
+<div>
+                            <div class="header-card-value" id="systemStatus">Active</div>
+                            <div class="header-card-label">System Status</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </nav>
+
+    <div class="main-content">
+        <div class="row g-3 h-100">
+            <div class="col-lg-8 col-xl-8">
+                <div class="card-glass h-100">
+                    <div class="card-glass-header">
+                        <h5 class="mb-0"><i class="fas fa-video me-2"></i>Live Camera Feed</h5>
+                        <div class="d-flex align-items-center gap-2">
+                            <span class="live-badge" id="liveBadge">
+                                <span class="live-dot"></span> LIVE
+                            </span>
+                            <span class="status-badge" id="cameraStatus">
+                                <i class="fas fa-video-slash"></i> Disconnected
+                            </span>
+                        </div>
+                    </div>
+                    <div class="video-container" id="videoContainer">
+                        <video id="localVideo" autoplay playsinline muted></video>
+                        <canvas id="videoCanvas"></canvas>
+                        <img id="ipCameraImg" style="display:none;" crossorigin="anonymous">
+                        <div class="video-overlay" id="videoOverlay">
+                            <div class="overlay-content">
+                                <i class="fas fa-video fa-3x mb-3"></i>
+                                <h4>Select Camera Source</h4>
+                                <p class="mb-3">Connect your mobile phone via IP Webcam or use browser camera</p>
+                                <div class="camera-options">
+                                    <div class="camera-option-card" id="optionIPCamera">
+                                        <i class="fas fa-wifi fa-2x mb-2"></i>
+                                        <h6>IP Camera</h6>
+                                        <div class="input-group input-group-sm glass-input-group">
+                                            <span class="input-group-text"><i class="fas fa-link"></i></span>
+                                            <input type="text" class="form-control glass-input" id="ipCameraUrl"
+                                                value="http://192.0.0.2:8080"
+                                                placeholder="http://IP:PORT">
+                                        </div>
+                                        <button class="btn btn-accent btn-sm mt-2" onclick="startIPCamera()">
+                                            <i class="fas fa-play me-1"></i>Connect IP Camera
+                                        </button>
+                                    </div>
+                                    <div class="camera-option-divider"><span>OR</span></div>
+                                    <div class="camera-option-card" id="optionBrowserCamera">
+                                        <i class="fas fa-laptop fa-2x mb-2"></i>
+                                        <h6>Browser Camera</h6>
+                                        <p class="small mb-2">Use this device camera</p>
+                                        <button class="btn btn-accent btn-sm" onclick="startBrowserCamera()">
+                                            <i class="fas fa-play me-1"></i>Start Camera
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="video-footer">
+                        <div class="footer-stat">
+                            <i class="fas fa-users me-2"></i>
+                            <span>Current Count: <strong id="currentCount">0</strong></span>
+                        </div>
+                        <div class="footer-stat">
+                            <i class="fas fa-video me-2"></i>
+                            <span>Camera: <strong id="cameraStatusText">Disconnected</strong></span>
+                        </div>
+                        <div class="footer-stat">
+                            <i class="fas fa-signal me-2"></i>
+                            <span>FPS: <strong id="fpsCounter">0</strong></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-4 col-xl-4">
+                <div class="card-glass h-100 d-flex flex-column">
+                    <div class="card-glass-header">
+                        <h5 class="mb-0"><i class="fas fa-user-tag me-2"></i>Person Tracking Panel</h5>
+                    </div>
+                    <div class="tracking-panel-body flex-grow-1">
+
+                        <div class="mb-3">
+                            <label class="form-label tracking-label">
+                                <i class="fas fa-id-card me-1"></i> All IDs
+                            </label>
+                            <select class="form-select glass-select" id="personSelect" onchange="showPersonDetail()">
+                                <option value="">-- View All ID --</option>
+                            </select>
+                        </div>
+
+                        <div class="person-detail-card" id="personDetail" style="display:none;">
+                            <div class="detail-row">
+                                <span class="detail-label">Person ID</span>
+                                <span class="detail-value" id="detailId">--</span>
+                            </div>
+                            <div class="detail-row">
+                                <span class="detail-label">First Seen</span>
+                                <span class="detail-value" id="detailFirstSeen">--</span>
+                            </div>
+                            <div class="detail-row">
+                                <span class="detail-label">Last Seen</span>
+                                <span class="detail-value" id="detailLastSeen">--</span>
+                            </div>
+                            <div class="detail-row">
+                                <span class="detail-label">Duration</span>
+                                <span class="detail-value" id="detailDuration">--</span>
+                            </div>
+                            <div class="detail-row">
+                                <span class="detail-label">Status</span>
+                                <span class="detail-value" id="detailStatus">--</span>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label tracking-label">
+                                <i class="fas fa-list me-1"></i> Tracked List
+                            </label>
+                            <div class="tracked-list" id="trackingList">
+                                <div class="tracked-list-empty">
+                                    <i class="fas fa-clock me-1"></i> No persons tracked for 1+ minute yet
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.2/socket.io.min.js"></script>
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+</body>
+</html>
